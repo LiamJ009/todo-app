@@ -1,23 +1,36 @@
 import React, { useState } from 'react';
-import './App.css';
+import './styles/App.css';
+import TodoItem from './components/TodoItem';
 
 function App() {
   const [todos, setTodos] = useState([
-    { id: 1, text: 'Learn React', completed: false },
-    { id: 2, text: 'Build a Todo app', completed: false },
+    { id: 1, text: 'Learn React', description: 'Understand the fundamentals of React', completed: false },
+    { id: 2, text: 'Build a Todo app', description: 'Create a simple app to manage tasks', completed: false },
   ]);
 
   const [newTodo, setNewTodo] = useState('');
+  const [newDescription, setNewDescription] = useState('');
 
   const addTodo = (e) => {
     e.preventDefault();
-    if (newTodo.trim()) {
+    if (newTodo.trim() && newDescription.trim()) {
       setTodos([
         ...todos,
-        { id: Date.now(), text: newTodo, completed: false },
+        { id: Date.now(), text: newTodo, description: newDescription, completed: false },
       ]);
       setNewTodo('');
+      setNewDescription('');
     }
+  };
+
+  const toggleComplete = (id) => {
+    setTodos(todos.map(todo => 
+      todo.id === id ? { ...todo, completed: !todo.completed } : todo
+    ));
+  };
+
+  const deleteTodo = (id) => {
+    setTodos(todos.filter(todo => todo.id !== id));
   };
 
   return (
@@ -39,7 +52,14 @@ function App() {
               value={newTodo}
               onChange={(e) => setNewTodo(e.target.value)}
               className="p-2 border rounded"
-              placeholder="Enter a new todo"
+              placeholder="Enter a new todo title"
+            />
+            <input
+              type="text"
+              value={newDescription}
+              onChange={(e) => setNewDescription(e.target.value)}
+              className="p-2 border rounded ml-2"
+              placeholder="Enter a description"
             />
             <button type="submit" className="ml-2 p-2 bg-blue-500 text-white rounded">
               Add Todo
@@ -47,9 +67,12 @@ function App() {
           </form>
           <ul>
             {todos.map((todo) => (
-              <li key={todo.id} className="p-2 border-b">
-                {todo.text}
-              </li>
+              <TodoItem
+                key={todo.id}
+                todo={todo}
+                toggleComplete={toggleComplete}
+                deleteTodo={deleteTodo}
+              />
             ))}
           </ul>
         </main>
