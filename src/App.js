@@ -4,31 +4,32 @@ import TodoItem from './components/TodoItem';
 
 function App() {
   const [todos, setTodos] = useState([
-    { id: 1, text: 'Learn React', description: 'Understand the fundamentals of React', completed: false },
-    { id: 2, text: 'Build a Todo app', description: 'Create a simple app to manage tasks', completed: false },
+    { id: 1, text: 'Learn React', description: 'Go through the React docs', completed: false },
+    { id: 2, text: 'Build a Todo app', description: 'Create a simple React todo app', completed: false },
   ]);
 
   const [newTodo, setNewTodo] = useState('');
-  const [newDescription, setNewDescription] = useState('');
 
+  // Add a new todo
   const addTodo = (e) => {
     e.preventDefault();
-    if (newTodo.trim() && newDescription.trim()) {
+    if (newTodo.trim()) {
       setTodos([
         ...todos,
-        { id: Date.now(), text: newTodo, description: newDescription, completed: false },
+        { id: Date.now(), text: newTodo, description: 'Description', completed: false },
       ]);
       setNewTodo('');
-      setNewDescription('');
     }
   };
 
+  // Toggle todo completion
   const toggleComplete = (id) => {
-    setTodos(todos.map(todo => 
+    setTodos(todos.map((todo) => 
       todo.id === id ? { ...todo, completed: !todo.completed } : todo
     ));
   };
 
+  // Delete a todo
   const deleteTodo = (id) => {
     setTodos(todos.filter(todo => todo.id !== id));
   };
@@ -52,14 +53,7 @@ function App() {
               value={newTodo}
               onChange={(e) => setNewTodo(e.target.value)}
               className="p-2 border rounded"
-              placeholder="Enter a new todo title"
-            />
-            <input
-              type="text"
-              value={newDescription}
-              onChange={(e) => setNewDescription(e.target.value)}
-              className="p-2 border rounded ml-2"
-              placeholder="Enter a description"
+              placeholder="Enter a new todo"
             />
             <button type="submit" className="ml-2 p-2 bg-blue-500 text-white rounded">
               Add Todo
