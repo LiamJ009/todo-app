@@ -9,16 +9,18 @@ function App() {
   ]);
 
   const [newTodo, setNewTodo] = useState('');
+  const [newDescription, setNewDescription] = useState('');
 
   // Add a new todo
   const addTodo = (e) => {
     e.preventDefault();
-    if (newTodo.trim()) {
+    if (newTodo.trim() && newDescription.trim()) {
       setTodos([
         ...todos,
-        { id: Date.now(), text: newTodo, description: 'Description', completed: false },
+        { id: Date.now(), text: newTodo, description: newDescription, completed: false },
       ]);
       setNewTodo('');
+      setNewDescription('');
     }
   };
 
@@ -47,18 +49,32 @@ function App() {
 
         <main className="flex-1 p-4 bg-white text-black">
           <h2>Todo List</h2>
-          <form onSubmit={addTodo} className="mb-4">
-            <input
-              type="text"
-              value={newTodo}
-              onChange={(e) => setNewTodo(e.target.value)}
-              className="p-2 border rounded"
-              placeholder="Enter a new todo"
-            />
-            <button type="submit" className="ml-2 p-2 bg-blue-500 text-white rounded">
+          <form onSubmit={addTodo} className="mb-4 flex items-center space-x-4">
+            <div className="flex-1">
+              <input
+                type="text"
+                value={newTodo}
+                onChange={(e) => setNewTodo(e.target.value)}
+                className="p-2 border rounded w-full mb-0"
+                placeholder="Enter a new todo"
+              />
+            </div>
+            
+            <div className="flex-1">
+              <input
+                type="text"
+                value={newDescription}
+                onChange={(e) => setNewDescription(e.target.value)}
+                className="p-2 border rounded w-full mb-0"
+                placeholder="Enter a description"
+              />
+            </div>
+
+            <button type="submit" className="p-2 bg-blue-500 text-white rounded h-10">
               Add Todo
             </button>
           </form>
+
           <ul>
             {todos.map((todo) => (
               <TodoItem
