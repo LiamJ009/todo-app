@@ -26,6 +26,7 @@ function App() {
   const [newTodo, setNewTodo] = useState('');
   const [newDescription, setNewDescription] = useState('');
   const [newListName, setNewListName] = useState('');
+  const [sortBy, setSortBy] = useState('All'); // Added state for sorting
 
   // Select active list
   const selectTodoList = (id) => {
@@ -110,6 +111,13 @@ function App() {
   // Get active list
   const activeList = todoLists.find((list) => list.id === activeListId);
 
+  // Sort todos based on filter
+  const sortedTodos = activeList?.todos.filter(todo => {
+    if (sortBy === 'All') return true;
+    if (sortBy === 'Completed') return todo.completed;
+    if (sortBy === 'Incomplete') return !todo.completed;
+  });
+
   return (
     <div className="flex flex-col h-screen bg-gray-900">
       {/* Header */}
@@ -160,7 +168,7 @@ function App() {
             </button>
           </form>
         </aside>
-        
+
         {/* Main Area */}
         <main className="flex-1 p-4 bg-white text-black">
           <h2 className="text-xl font-semibold mb-4">{activeList?.name || "No List Selected"}</h2>
@@ -188,8 +196,21 @@ function App() {
             </button>
           </form>
 
+          {/* Sort By Dropdown */}
+          <div className="mb-4">
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
+              className="p-2 border rounded"
+            >
+              <option value="All">All</option>
+              <option value="Completed">Completed</option>
+              <option value="Incomplete">Incomplete</option>
+            </select>
+          </div>
+
           <ul>
-            {activeList?.todos.map((todo) => (
+            {sortedTodos.map((todo) => (
               <TodoItem
                 key={todo.id}
                 todo={todo}
