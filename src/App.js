@@ -1,20 +1,21 @@
-import React, { useState } from 'react';
-import './styles/App.css';
-import TodoItem from './components/TodoItem';
-import Modal from './components/Modal';
+import React, { useState } from 'react'; // Import React and the useState hook
+import './styles/App.css'; // Import the CSS file for styling
+import TodoItem from './components/TodoItem'; // Import the TodoItem component to render each todo
+import Modal from './components/Modal'; // Import the Modal component for editing todo lists and todos
 
 function App() {
+  // State for storing todo lists, with two prefilled lists
   const [todoLists, setTodoLists] = useState([
     {
-      id: 1,
-      name: "Work",
-      todos: [
+      id: 1, // Unique identifier for the list
+      name: "Work", // Name of the list
+      todos: [ // Array of todos within this list
         { id: 1, text: "Finish report", description: "Complete the monthly report", completed: false },
         { id: 2, text: "Email team", description: "Send updates to the team", completed: true },
       ],
     },
     {
-      id: 2,
+      id: 2, 
       name: "Personal",
       todos: [
         { id: 3, text: "Buy groceries", description: "Pick up fruits and vegetables", completed: false },
@@ -23,163 +24,165 @@ function App() {
     },
   ]);
 
+  // State for active list ID, used to track which list is selected and 'active'
   const [activeListId, setActiveListId] = useState(1);
+
+  // States for adding new todo and new list
   const [newTodo, setNewTodo] = useState('');
   const [newDescription, setNewDescription] = useState('');
   const [newListName, setNewListName] = useState('');
-  const [sortBy, setSortBy] = useState('All');
+  const [sortBy, setSortBy] = useState('All'); // Filter todos by All, Completed, or Incomplete
 
-  // New state for editing
+  // States for modal editing
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingList, setEditingList] = useState(null);
   const [editingTodo, setEditingTodo] = useState(null);
   const [editText, setEditText] = useState('');
   const [editDescription, setEditDescription] = useState('');
 
-  // Select active todo list
+  // Find the active list based on its ID
+  const activeList = todoLists.find((list) => list.id === activeListId);
+
+  // Filter todos based on the selected sort option
+  // Make sure activeList is not undefined before accessing its todos
+  const sortedTodos = activeList?.todos?.filter(todo => {
+    if (sortBy === 'All') return true; // If 'All' is selected, show all todos
+    if (sortBy === 'Completed') return todo.completed; // If 'Completed' is selected, show only completed todos
+    if (sortBy === 'Incomplete') return !todo.completed; // If 'Incomplete' is selected, show only incomplete todos
+  }) || []; // default to empty array if no todos exist or activeList is undefined
+
+  // Handler for selecting a todo list
   const selectTodoList = (id) => {
-    setActiveListId(id);
+    setActiveListId(id); // Set the active list to the selected one
   };
 
-  // Add a new todo
+  // Handler for adding a new todo list
+  const addTodoList = (e) => {
+    e.preventDefault(); // Prevent default form submission behavior
+    if (newListName.trim()) { // Check if the new list name isn't empty
+      const newList = {
+        id: Date.now(), // Generate a unique ID using current timestamp
+        name: newListName,
+        todos: [],
+      };
+      setTodoLists([...todoLists, newList]); // Add the new list to the todoLists state
+      setNewListName(''); // Clear the new list name input field
+      setActiveListId(newList.id); // Set the new list as the active list
+    }
+  };
+
+  // Handler for deleting a todo list
+  const deleteTodoList = (id) => {
+    const updatedLists = todoLists.filter((list) => list.id !== id); // Remove the list with the given ID
+    setTodoLists(updatedLists); // Update the state with the remaining lists
+  
+    if (updatedLists.length === 0) {
+      setActiveListId(null); // Reset active list if no lists are left
+    } else if (id === activeListId) {
+      setActiveListId(updatedLists[0].id); // Set the first list as active if the deleted list was active
+    }
+  };
+  
+
+  // Handler for adding a new todo to the active list
   const addTodo = (e) => {
-    e.preventDefault();
-    if (newTodo.trim() && newDescription.trim()) {
+    e.preventDefault(); // Prevent default form submission behavior
+    if (newTodo.trim() && newDescription.trim()) { // Check if both fields have content
       const updatedLists = todoLists.map((list) =>
-        list.id === activeListId
+        list.id === activeListId // Find the active list
           ? {
-              ...list,
+              ...list, // Spread the existing list
               todos: [
-                ...list.todos,
-                { id: Date.now(), text: newTodo, description: newDescription, completed: false },
+                ...list.todos, // Keep the existing todos
+                { id: Date.now(), text: newTodo, description: newDescription, completed: false }, // Add the new todo
               ],
             }
           : list
       );
-      setTodoLists(updatedLists);
-      setNewTodo('');
-      setNewDescription('');
+      setTodoLists(updatedLists); // Update the state with the new todo list
+      setNewTodo(''); // Clear the new todo input
+      setNewDescription(''); // Clear the new description input
     }
   };
 
-  // Toggle todo completion
+  // Handler for toggling the completion status of a todo
   const toggleComplete = (id) => {
     const updatedLists = todoLists.map((list) =>
       list.id === activeListId
         ? {
-            ...list,
+            ...list, // If it's the active list
             todos: list.todos.map((todo) =>
-              todo.id === id ? { ...todo, completed: !todo.completed } : todo
+              todo.id === id ? { ...todo, completed: !todo.completed } : todo // Toggle completed status of the todo
             ),
           }
-        : list
+        : list // If it's not the active list, leave it unchanged
     );
-    setTodoLists(updatedLists);
+    setTodoLists(updatedLists); // Update the state with the toggled completion
   };
 
-  // Delete a todo
+  // Handler for deleting a todo from the active list
   const deleteTodo = (id) => {
     const updatedLists = todoLists.map((list) =>
       list.id === activeListId
         ? {
             ...list,
-            todos: list.todos.filter((todo) => todo.id !== id),
+            todos: list.todos.filter((todo) => todo.id !== id), // Remove the selected todo
           }
         : list
     );
-    setTodoLists(updatedLists);
+    setTodoLists(updatedLists); // Update the state with the remaining todos
   };
 
-  // Add a new todo list
-  const addTodoList = (e) => {
-    e.preventDefault();
-    if (newListName.trim()) {
-      const newList = {
-        id: Date.now(),
-        name: newListName,
-        todos: [],
-      };
-      setTodoLists([...todoLists, newList]);
-      setNewListName('');
-      setActiveListId(newList.id); // Automatically select the new list
-    }
-  };
-
-  // Delete a todo list
-  const deleteTodoList = (id) => {
-    const updatedLists = todoLists.filter((list) => list.id !== id);
-    setTodoLists(updatedLists);
-
-    // If the deleted list was active, select the first available list
-    if (id === activeListId && updatedLists.length > 0) {
-      setActiveListId(updatedLists[0].id);
-    }
-  };
-
-  // New method to open list edit modal
+  // Handler for opening the edit modal for a list
   const openListEditModal = (list) => {
-    setEditingList(list);
-    setEditText(list.name);
-    setIsEditModalOpen(true);
+    setEditingList(list); // Set the list to be edited
+    setEditText(list.name); // Set the name of the list as the default value in the input
+    setIsEditModalOpen(true); // Open the modal
   };
 
-  // New method to save list edit
+  // Handler for saving the list name after editing
   const saveListEdit = () => {
-    if (editText.trim()) {
-      const updatedLists = todoLists.map(list => 
-        list.id === editingList.id ? { ...list, name: editText } : list
+    if (editText.trim()) { // Ensure the new name isn't empty
+      const updatedLists = todoLists.map(list =>
+        list.id === editingList.id ? { ...list, name: editText } : list // Update the name of the editing list
       );
-      setTodoLists(updatedLists);
-      setIsEditModalOpen(false);
-      setEditingList(null);
-      setEditText('');
+      setTodoLists(updatedLists); // Update the state with the new list name
+      setIsEditModalOpen(false); // Close the modal
+      setEditingList(null); // Reset the editing list state
+      setEditText(''); // Clear the edit text field
     }
   };
 
-  // New method to open todo edit modal
+  // Handler for opening the edit modal for a todo
   const openTodoEditModal = (todo) => {
-    setEditingTodo(todo);
-    setEditText(todo.text);
-    setEditDescription(todo.description);
-    setIsEditModalOpen(true);
+    setEditingTodo(todo); // Set the todo to be edited
+    setEditText(todo.text); // Set the text of the todo as the default value in the input
+    setEditDescription(todo.description); // Set the description of the todo as the default value
+    setIsEditModalOpen(true); // Open the modal
   };
 
-  // New method to save todo edit
+  // Handler for saving the edited todo
   const saveTodoEdit = () => {
-    if (editText.trim() && editDescription.trim()) {
-      const updatedLists = todoLists.map(list => 
-        list.id === activeListId 
+    if (editText.trim() && editDescription.trim()) { // Ensure both fields have content
+      const updatedLists = todoLists.map(list =>
+        list.id === activeListId
           ? {
               ...list,
-              todos: list.todos.map(todo => 
-                todo.id === editingTodo.id 
-                  ? { ...todo, text: editText, description: editDescription } 
+              todos: list.todos.map(todo =>
+                todo.id === editingTodo.id
+                  ? { ...todo, text: editText, description: editDescription } // Update the todo
                   : todo
-              )
-            } 
+              ),
+            }
           : list
       );
-      setTodoLists(updatedLists);
-      setIsEditModalOpen(false);
-      setEditingTodo(null);
-      setEditText('');
-      setEditDescription('');
+      setTodoLists(updatedLists); // Update the state with the edited todo
+      setIsEditModalOpen(false); // Close the modal
+      setEditingTodo(null); // Reset the editing todo state
+      setEditText(''); // Clear the edit text field
+      setEditDescription(''); // Clear the edit description field
     }
   };
-
-  // Get active list
-  const activeList = todoLists.find((list) => list.id === activeListId);
-
-  // Sort todos based on filter
-  // eslint-disable-next-line
-  const sortedTodos = activeList?.todos.filter(todo => {
-    if (sortBy === 'All') return true;
-    if (sortBy === 'Completed') return todo.completed;
-    if (sortBy === 'Incomplete') return !todo.completed;
-  });
-
-  // Rest of the component remains the same as in the previous artifact...
-  // (The return statement and JSX remain unchanged)
 
   return (
     <div className="flex flex-col h-screen bg-gray-900">
@@ -190,14 +193,14 @@ function App() {
 
       {/* Main Content */}
       <div className="flex flex-1">
-        {/* Sidebar */}
+        {/* Sidebar - Displaying all todo lists */}
         <aside className="bg-gray-800 text-white w-1/4 p-4">
           <h2 className="text-lg font-semibold mb-4">Todo Lists</h2>
           <ul className="space-y-2">
             {todoLists.map((list) => (
               <li
                 key={list.id}
-                onClick={() => selectTodoList(list.id)}
+                onClick={() => selectTodoList(list.id)} // Set the active list when clicked
                 className={`p-2 cursor-pointer rounded flex justify-between items-center
                   ${activeListId === list.id ? "bg-gray-600" : "bg-gray-700"}
                   hover:bg-gray-600`}
@@ -206,8 +209,8 @@ function App() {
                 <div className="flex space-x-2">
                   <button
                     onClick={(e) => {
-                      e.stopPropagation();
-                      openListEditModal(list);
+                      e.stopPropagation(); // Prevent event bubbling
+                      openListEditModal(list); // Open the list edit modal
                     }}
                     className="text-blue-500 hover:text-blue-700 mr-2"
                   >
@@ -216,7 +219,7 @@ function App() {
                   <button
                     onClick={(e) => {
                       e.stopPropagation(); 
-                      deleteTodoList(list.id);
+                      deleteTodoList(list.id); // Delete the list
                     }}
                     className="text-red-500 hover:text-red-700"
                   >
@@ -230,7 +233,7 @@ function App() {
             <input
               type="text"
               value={newListName}
-              onChange={(e) => setNewListName(e.target.value)}
+              onChange={(e) => setNewListName(e.target.value)} // Handle list name input change
               placeholder="New list name"
               className="p-2 w-full rounded bg-gray-700 text-white"
             />
@@ -243,7 +246,7 @@ function App() {
           </form>
         </aside>
 
-        {/* Main Area */}
+        {/* Main Area - Display todos of the active list */}
         <main className="flex-1 p-4 bg-white text-black">
           <h2 className="text-xl font-semibold mb-4">{activeList?.name || "No List Selected"}</h2>
           <form onSubmit={addTodo} className="mb-4 flex items-center space-x-4">
@@ -251,7 +254,7 @@ function App() {
               <input
                 type="text"
                 value={newTodo}
-                onChange={(e) => setNewTodo(e.target.value)}
+                onChange={(e) => setNewTodo(e.target.value)} // Handle new todo input change
                 className="p-2 border rounded w-full mb-0"
                 placeholder="Enter a new todo"
               />
@@ -260,21 +263,26 @@ function App() {
               <input
                 type="text"
                 value={newDescription}
-                onChange={(e) => setNewDescription(e.target.value)}
+                onChange={(e) => setNewDescription(e.target.value)} // Handle new description input change
                 className="p-2 border rounded w-full mb-0"
                 placeholder="Enter a description"
               />
             </div>
-            <button type="submit" className="p-2 bg-blue-500 text-white rounded h-10">
+            <button
+              type="submit"
+              className={`p-2 bg-blue-500 text-white rounded h-10 ${!activeListId ? 'opacity-50 cursor-not-allowed' : ''}`} // Disable button when no list is active
+              disabled={!activeListId} // Disable button when there's no active list
+            >
               Add Todo
             </button>
+
           </form>
 
           {/* Sort By Dropdown */}
           <div className="mb-4">
             <select
               value={sortBy}
-              onChange={(e) => setSortBy(e.target.value)}
+              onChange={(e) => setSortBy(e.target.value)} // Handle sorting option change
               className="p-2 border rounded"
             >
               <option value="All">All</option>
@@ -283,17 +291,22 @@ function App() {
             </select>
           </div>
 
-          <ul>
-            {sortedTodos.map((todo) => (
-              <TodoItem
-                key={todo.id}
-                todo={todo}
-                toggleComplete={toggleComplete}
-                deleteTodo={deleteTodo}
-                onEdit={() => openTodoEditModal(todo)}
-              />
-            ))}
-          </ul>
+          {/* Todo Items */}
+      <ul>
+        {sortedTodos.length > 0 ? (
+          sortedTodos.map((todo) => (
+            <TodoItem
+              key={todo.id}
+              todo={todo}
+              toggleComplete={toggleComplete}
+              deleteTodo={deleteTodo}
+              onEdit={() => openTodoEditModal(todo)}
+            />
+          ))
+        ) : (
+          <p className="text-gray-500">No todos available.</p> // Fallback message if there are no todos
+        )}
+      </ul>
         </main>
       </div>
 
@@ -301,42 +314,52 @@ function App() {
       <Modal 
         isOpen={isEditModalOpen} 
         onClose={() => {
-          setIsEditModalOpen(false);
-          setEditingList(null);
+          setIsEditModalOpen(false); // Close the modal
+          setEditingList(null); // Reset editing states
           setEditingTodo(null);
           setEditText('');
           setEditDescription('');
         }}
-        onSave={editingList ? saveListEdit : saveTodoEdit}
       >
-        <div className="space-y-4">
-          {editingList ? (
+        {editingList ? (
+          <div>
+            <h3 className="text-xl mb-4">Edit Todo List</h3>
             <input
               type="text"
               value={editText}
-              onChange={(e) => setEditText(e.target.value)}
-              placeholder="List Name"
-              className="w-full p-2 border rounded"
+              onChange={(e) => setEditText(e.target.value)} // Handle input change
+              className="p-2 w-full rounded"
             />
-          ) : (
-            <>
-              <input
-                type="text"
-                value={editText}
-                onChange={(e) => setEditText(e.target.value)}
-                placeholder="Todo Title"
-                className="w-full p-2 border rounded"
-              />
-              <input
-                type="text"
-                value={editDescription}
-                onChange={(e) => setEditDescription(e.target.value)}
-                placeholder="Description"
-                className="w-full p-2 border rounded"
-              />
-            </>
-          )}
-        </div>
+            <button
+              onClick={saveListEdit} // Save the changes to the list
+              className="mt-2 p-2 bg-green-500 text-white rounded hover:bg-green-600"
+            >
+              Save
+            </button>
+          </div>
+        ) : (
+          <div>
+            <h3 className="text-xl mb-4">Edit Todo</h3>
+            <input
+              type="text"
+              value={editText}
+              onChange={(e) => setEditText(e.target.value)} // Handle input change
+              className="p-2 w-full rounded"
+            />
+            <textarea
+              value={editDescription}
+              onChange={(e) => setEditDescription(e.target.value)} // Handle description input change
+              className="p-2 w-full rounded mt-2"
+              placeholder="Edit description"
+            />
+            <button
+              onClick={saveTodoEdit} // Save the changes to the todo
+              className="mt-2 p-2 bg-green-500 text-white rounded hover:bg-green-600"
+            >
+              Save
+            </button>
+          </div>
+        )}
       </Modal>
     </div>
   );
