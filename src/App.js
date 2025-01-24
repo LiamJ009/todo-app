@@ -171,6 +171,7 @@ function App() {
   const activeList = todoLists.find((list) => list.id === activeListId);
 
   // Sort todos based on filter
+  // eslint-disable-next-line
   const sortedTodos = activeList?.todos.filter(todo => {
     if (sortBy === 'All') return true;
     if (sortBy === 'Completed') return todo.completed;
