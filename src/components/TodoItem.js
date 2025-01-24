@@ -11,13 +11,6 @@ function TodoItem({ todo, toggleComplete, deleteTodo, onEdit }) {
 
       {/* Inline container for actions */}
       <div className="flex items-center space-x-4">
-        {/* Edit button */}
-        <button
-          onClick={onEdit}
-          className="text-blue-500 hover:text-blue-700 mr-2"
-        >
-          ✎
-        </button>
 
         {/* Custom checkbox */}
         <div className="round">
@@ -35,6 +28,17 @@ function TodoItem({ todo, toggleComplete, deleteTodo, onEdit }) {
             } flex items-center justify-center w-7 h-7 rounded-full border-2 cursor-pointer transition-colors duration-200`}
           ></label>
         </div>
+
+
+        {/* Edit button */}
+        <button
+          onClick={onEdit}
+          className="text-blue-500 hover:text-blue-700 mr-2"
+        >
+          ✎
+        </button>
+
+        
 
         {/* Cross icon */}
         <button
