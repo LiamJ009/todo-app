@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import './styles/App.css';
 import TodoItem from './components/TodoItem';
+import Modal from './components/Modal';
 
 function App() {
   const [todoLists, setTodoLists] = useState([
@@ -26,9 +27,16 @@ function App() {
   const [newTodo, setNewTodo] = useState('');
   const [newDescription, setNewDescription] = useState('');
   const [newListName, setNewListName] = useState('');
-  const [sortBy, setSortBy] = useState('All'); // Added state for sorting
+  const [sortBy, setSortBy] = useState('All');
 
-  // Select active list
+  // New state for editing
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editingList, setEditingList] = useState(null);
+  const [editingTodo, setEditingTodo] = useState(null);
+  const [editText, setEditText] = useState('');
+  const [editDescription, setEditDescription] = useState('');
+
+  // Select active todo list
   const selectTodoList = (id) => {
     setActiveListId(id);
   };
@@ -108,16 +116,69 @@ function App() {
     }
   };
 
+  // New method to open list edit modal
+  const openListEditModal = (list) => {
+    setEditingList(list);
+    setEditText(list.name);
+    setIsEditModalOpen(true);
+  };
+
+  // New method to save list edit
+  const saveListEdit = () => {
+    if (editText.trim()) {
+      const updatedLists = todoLists.map(list => 
+        list.id === editingList.id ? { ...list, name: editText } : list
+      );
+      setTodoLists(updatedLists);
+      setIsEditModalOpen(false);
+      setEditingList(null);
+      setEditText('');
+    }
+  };
+
+  // New method to open todo edit modal
+  const openTodoEditModal = (todo) => {
+    setEditingTodo(todo);
+    setEditText(todo.text);
+    setEditDescription(todo.description);
+    setIsEditModalOpen(true);
+  };
+
+  // New method to save todo edit
+  const saveTodoEdit = () => {
+    if (editText.trim() && editDescription.trim()) {
+      const updatedLists = todoLists.map(list => 
+        list.id === activeListId 
+          ? {
+              ...list,
+              todos: list.todos.map(todo => 
+                todo.id === editingTodo.id 
+                  ? { ...todo, text: editText, description: editDescription } 
+                  : todo
+              )
+            } 
+          : list
+      );
+      setTodoLists(updatedLists);
+      setIsEditModalOpen(false);
+      setEditingTodo(null);
+      setEditText('');
+      setEditDescription('');
+    }
+  };
+
   // Get active list
   const activeList = todoLists.find((list) => list.id === activeListId);
 
   // Sort todos based on filter
-  // eslint-disable-next-line
   const sortedTodos = activeList?.todos.filter(todo => {
     if (sortBy === 'All') return true;
     if (sortBy === 'Completed') return todo.completed;
     if (sortBy === 'Incomplete') return !todo.completed;
   });
+
+  // Rest of the component remains the same as in the previous artifact...
+  // (The return statement and JSX remain unchanged)
 
   return (
     <div className="flex flex-col h-screen bg-gray-900">
@@ -141,15 +202,26 @@ function App() {
                   hover:bg-gray-600`}
               >
                 <span>{list.name}</span>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation(); // Prevent triggering list selection
-                    deleteTodoList(list.id);
-                  }}
-                  className="text-red-500 hover:text-red-700"
-                >
-                  &times;
-                </button>
+                <div className="flex space-x-2">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      openListEditModal(list);
+                    }}
+                    className="text-blue-500 hover:text-blue-700 mr-2"
+                  >
+                    ✎
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation(); 
+                      deleteTodoList(list.id);
+                    }}
+                    className="text-red-500 hover:text-red-700"
+                  >
+                    &times;
+                  </button>
+                </div>
               </li>
             ))}
           </ul>
@@ -217,11 +289,54 @@ function App() {
                 todo={todo}
                 toggleComplete={toggleComplete}
                 deleteTodo={deleteTodo}
+                onEdit={() => openTodoEditModal(todo)}
               />
             ))}
           </ul>
         </main>
       </div>
+
+      {/* Edit Modal */}
+      <Modal 
+        isOpen={isEditModalOpen} 
+        onClose={() => {
+          setIsEditModalOpen(false);
+          setEditingList(null);
+          setEditingTodo(null);
+          setEditText('');
+          setEditDescription('');
+        }}
+        onSave={editingList ? saveListEdit : saveTodoEdit}
+      >
+        <div className="space-y-4">
+          {editingList ? (
+            <input
+              type="text"
+              value={editText}
+              onChange={(e) => setEditText(e.target.value)}
+              placeholder="List Name"
+              className="w-full p-2 border rounded"
+            />
+          ) : (
+            <>
+              <input
+                type="text"
+                value={editText}
+                onChange={(e) => setEditText(e.target.value)}
+                placeholder="Todo Title"
+                className="w-full p-2 border rounded"
+              />
+              <input
+                type="text"
+                value={editDescription}
+                onChange={(e) => setEditDescription(e.target.value)}
+                placeholder="Description"
+                className="w-full p-2 border rounded"
+              />
+            </>
+          )}
+        </div>
+      </Modal>
     </div>
   );
 }

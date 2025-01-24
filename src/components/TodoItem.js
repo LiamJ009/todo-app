@@ -1,6 +1,6 @@
 import React from 'react';
 
-function TodoItem({ todo, toggleComplete, deleteTodo }) {
+function TodoItem({ todo, toggleComplete, deleteTodo, onEdit }) {
   return (
     <li className={`flex items-center justify-between p-4 mb-4 bg-gray-100 rounded-lg shadow-md ${todo.completed ? 'bg-blue-100' : ''}`}>
       {/* Todo Text */}
@@ -9,8 +9,16 @@ function TodoItem({ todo, toggleComplete, deleteTodo }) {
         <p className={`text-sm ${todo.completed ? 'line-through text-gray-400' : 'text-gray-600'}`}>{todo.description}</p>
       </div>
 
-      {/* Inline container for checkbox and cross */}
+      {/* Inline container for actions */}
       <div className="flex items-center space-x-4">
+        {/* Edit button */}
+        <button
+          onClick={onEdit}
+          className="text-blue-500 hover:text-blue-700 mr-2"
+        >
+          ✎
+        </button>
+
         {/* Custom checkbox */}
         <div className="round">
           <input
