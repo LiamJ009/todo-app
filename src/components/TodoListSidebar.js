@@ -6,22 +6,23 @@ function TodoListSidebar({
   onSelectList, 
   onAddList, 
   onEditList, 
-  onDeleteList 
+  onDeleteList,
+  isAboutPageActive
 }) {
   const [newListName, setNewListName] = React.useState('');
 
   const handleSubmitNewList = (event) => {
     event.preventDefault();
-    
-    // Only add list if name is not empty
     if (newListName.trim()) {
       onAddList(newListName);
-      setNewListName(''); // Reset input after adding
+      setNewListName('');
     }
   };
 
   return (
-    <aside className="bg-gray-800 text-white w-1/4 p-4">
+    <aside className={`bg-gray-800 text-white w-1/4 p-4 transition-opacity ${
+      isAboutPageActive ? 'opacity-50 pointer-events-none' : ''
+    }`}>
       <h2 className="text-lg font-semibold mb-4">Todo Lists</h2>
       <ul className="space-y-2">
         {todoLists.map((list) => (
