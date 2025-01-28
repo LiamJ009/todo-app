@@ -5,6 +5,12 @@ import TodoInputForm from './components/TodoInputForm';
 import TodoItem from './components/TodoItem';
 import Modal from './components/Modal';
 import About from './components/About';
+import { 
+  FaRegCheckSquare, 
+  FaHome, 
+  FaInfoCircle 
+} from 'react-icons/fa';
+
 
 function App() {
   const [todoLists, setTodoLists] = useState([
@@ -41,15 +47,35 @@ function App() {
 
     return (
       <div className="flex flex-col h-screen bg-gray-900">
+
+        {/* Header */}
         <header className="bg-gray-900 text-white p-4 flex justify-between items-center shadow-md">
-          <h1 className="text-xl font-semibold">
-            <Link to="/" className="text-gray-100 hover:text-white">Todo App</Link>
-          </h1>
-          <nav className="flex space-x-2">
-            <NavLink to="/" end>Todo</NavLink>
-            <NavLink to="/about">About</NavLink>
-          </nav>
-        </header>
+  <div className="flex items-center space-x-6">
+    {/* Title with icon */}
+    <h1 className="text-xl font-semibold flex items-center space-x-2">
+      <FaRegCheckSquare className="text-blue-400" />
+      <Link to="/" className="text-gray-100 hover:text-white">TODO App</Link>
+    </h1>
+
+    {/* Vertical separator */}
+    <div className="flex items-center space-x-4" style={{ marginLeft: isSidebarCollapsed ? '1rem' : '7rem' }}>
+      <div className="h-6 w-px bg-gray-500" />
+
+      {/* Navigation Links */}
+      <nav className="flex space-x-4">
+        <NavLink to="/" end>
+          <FaHome className="mr-2 inline-block" />
+          Lists
+        </NavLink>
+        <NavLink to="/about">
+          <FaInfoCircle className="mr-2 inline-block" />
+          About
+        </NavLink>
+      </nav>
+    </div>
+  </div>
+</header>
+
         
         <div className="flex flex-1">
           <TodoListSidebar 
@@ -74,7 +100,7 @@ function App() {
       to={to}
       end={end}
       className={({ isActive }) => 
-        `px-4 py-2 rounded-md transition-colors ${
+        `px-3 py-2 rounded-md transition-colors flex items-center text-sm font-medium ${
           isActive ? 'bg-gray-700 text-white' : 'text-gray-300 hover:bg-gray-700 hover:text-white'
         }`
       }
