@@ -26,6 +26,7 @@ function App() {
     },
   ]);
 
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [activeListId, setActiveListId] = useState(1);
   const [sortFilter, setSortFilter] = useState('All');
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -59,6 +60,8 @@ function App() {
             onEditList={handleEditList}
             onDeleteList={handleDeleteList}
             isAboutPageActive={isAboutPage}
+            isCollapsed={isSidebarCollapsed}
+            onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
           />
           <Outlet />
         </div>
