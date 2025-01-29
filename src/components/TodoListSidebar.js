@@ -13,10 +13,12 @@ function TodoListSidebar({
 }) {
   const [newListName, setNewListName] = React.useState('');
 
+  // components/TodoListSidebar.js
   const handleSubmitNewList = (event) => {
     event.preventDefault();
-    if (newListName.trim()) {
-      onAddList(newListName);
+    const trimmedName = newListName.trim();
+    if (trimmedName) {
+      onAddList(trimmedName);
       setNewListName('');
     }
   };
