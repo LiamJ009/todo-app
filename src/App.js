@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react'; // Add useEffect import
 import { BrowserRouter as Router, Routes, Route, Link, useLocation, Outlet } from 'react-router-dom';
 import TodoListSidebar from './components/TodoListSidebar';
 import TodoInputForm from './components/TodoInputForm';
@@ -11,35 +11,62 @@ import {
   FaInfoCircle 
 } from 'react-icons/fa';
 
+const LOCAL_STORAGE_KEY = 'todoAppData';
+
+const initialTodoLists = [
+  {
+    id: 1,
+    name: "Work",
+    todos: [
+      { id: 1, text: "Finish report", description: "Complete the monthly report", completed: false },
+      { id: 2, text: "Email team", description: "Send updates to the team", completed: true },
+    ],
+  },
+  {
+    id: 2, 
+    name: "Personal",
+    todos: [
+      { id: 3, text: "Buy groceries", description: "Pick up fruits and vegetables", completed: false },
+      { id: 4, text: "Workout", description: "Go to the gym", completed: true },
+    ],
+  },
+];
 
 function App() {
-  const [todoLists, setTodoLists] = useState([
-    {
-      id: 1,
-      name: "Work",
-      todos: [
-        { id: 1, text: "Finish report", description: "Complete the monthly report", completed: false },
-        { id: 2, text: "Email team", description: "Send updates to the team", completed: true },
-      ],
-    },
-    {
-      id: 2, 
-      name: "Personal",
-      todos: [
-        { id: 3, text: "Buy groceries", description: "Pick up fruits and vegetables", completed: false },
-        { id: 4, text: "Workout", description: "Go to the gym", completed: true },
-      ],
-    },
-  ]);
 
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-  const [activeListId, setActiveListId] = useState(1);
   const [sortFilter, setSortFilter] = useState('All');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingList, setEditingList] = useState(null);
   const [editingTodo, setEditingTodo] = useState(null);
   const [editText, setEditText] = useState('');
   const [editDescription, setEditDescription] = useState('');
+
+  // Initialize state with localStorage
+  const [todoLists, setTodoLists] = useState(() => {
+    const savedData = localStorage.getItem(LOCAL_STORAGE_KEY);
+    return savedData ? JSON.parse(savedData).todoLists : initialTodoLists;
+  });
+
+  const [activeListId, setActiveListId] = useState(() => {
+    const savedData = localStorage.getItem(LOCAL_STORAGE_KEY);
+    return savedData ? JSON.parse(savedData).activeListId : 1;
+  });
+
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {
+    const savedData = localStorage.getItem(LOCAL_STORAGE_KEY);
+    return savedData ? JSON.parse(savedData).isSidebarCollapsed : false;
+  });
+
+  // Save to localStorage
+  useEffect(() => {
+    const stateToSave = {
+      todoLists,
+      activeListId,
+      isSidebarCollapsed
+    };
+    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(stateToSave));
+  }, [todoLists, activeListId, isSidebarCollapsed]);
+
 
   const Layout = () => {
     const location = useLocation();
@@ -151,9 +178,10 @@ function App() {
     const updatedLists = todoLists.filter(list => list.id !== listId);
     setTodoLists(updatedLists);
     
-    if (updatedLists.length > 0) {
+    // Add this check to prevent undefined activeListId
+    if (updatedLists.length > 0 && !updatedLists.some(list => list.id === activeListId)) {
       setActiveListId(updatedLists[0].id);
-    } else {
+    } else if (updatedLists.length === 0) {
       setActiveListId(null);
     }
   };
