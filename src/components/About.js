@@ -2,8 +2,6 @@ import React from 'react';
 
 const About = () => {
   const remainingTasks = [
-    "Make todo sidebar collapsible",
-    "Implement local storage persistence",
     "Integrate Redux for state management",
     "Add drag-and-drop todo reordering",
     "Implement multi-user support with authentication"
