@@ -53,6 +53,14 @@ const todoSlice = createSlice({
       }
     },
 
+    reorderTodos: (state, action) => {
+      const { listId, reorderedTodos } = action.payload;
+      const list = state.todoLists.find(l => l.id === listId);
+      if (list) {
+        list.todos = reorderedTodos;
+      }
+    },
+
     // Todo actions
     addTodo: (state, action) => {
       const list = state.todoLists.find(l => l.id === state.activeListId);
@@ -101,7 +109,8 @@ export const {
   toggleComplete,
   deleteTodo,
   startEditTodo,
-  saveTodo
+  saveTodo,
+  reorderTodos
 } = todoSlice.actions;
 
 export default todoSlice.reducer;

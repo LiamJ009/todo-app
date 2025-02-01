@@ -23,8 +23,25 @@ import {
   toggleComplete,
   deleteTodo,
   startEditTodo,
-  saveTodo
+  saveTodo,
+  reorderTodos
 } from './redux/todoSlice';
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+  useSortable,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 
 const AppWrapper = () => (
   <Provider store={store}>
@@ -136,8 +153,62 @@ const App = () => {
     return true;
   }) || [];
 
-  const TodoMainInterface = () => (
-    <main className="flex-1 p-4 bg-white text-black">
+  const SortableTodoItem = ({ id, ...props }) => {
+    const {
+      attributes,
+      listeners,
+      setNodeRef,
+      transform,
+      transition,
+    } = useSortable({ id });
+  
+    const style = {
+      transform: CSS.Transform.toString(transform),
+      transition,
+    };
+  
+    return (
+      <li ref={setNodeRef} style={style} className="mb-4">
+        <div className="flex items-center">
+          <button
+            {...attributes}
+            {...listeners}
+            className="drag-handle p-2 mr-2 cursor-move hover:bg-gray-200 rounded-lg"
+          >
+            ⋮⋮
+          </button>
+          <div className="flex-1">
+            <TodoItem {...props} />
+          </div>
+        </div>
+      </li>
+    );
+  };
+
+  const TodoMainInterface = () => {
+    const sensors = useSensors(
+      useSensor(PointerSensor),
+      useSensor(KeyboardSensor, {
+        coordinateGetter: sortableKeyboardCoordinates,
+      })
+    );
+  
+    const handleDragEnd = (event) => {
+      const { active, over } = event;
+      if (!active || !over || active.id === over.id) return;
+  
+      const originalTodos = activeList.todos;
+      const oldIndex = originalTodos.findIndex(t => t.id === active.id);
+      const newIndex = originalTodos.findIndex(t => t.id === over.id);
+  
+      if (oldIndex === -1 || newIndex === -1) return;
+  
+      const reorderedTodos = arrayMove(originalTodos, oldIndex, newIndex);
+      dispatch(reorderTodos({ listId: activeListId, reorderedTodos }));
+    };
+  
+    return (
+      <main className="flex-1 p-4 bg-white text-black">
       <h2 className="text-xl font-semibold mb-4">
         {activeList?.name || "No List Selected"}
       </h2>
@@ -158,28 +229,51 @@ const App = () => {
           <option value="Incomplete">Incomplete</option>
         </select>
       </div>
+  
+        <DndContext 
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragEnd={handleDragEnd}
+        >
+          <SortableContext 
+            items={activeList?.todos.map(todo => todo.id) || []}
+            strategy={verticalListSortingStrategy}
+          >
+            <ul>
+              {filteredTodos.length > 0 ? (
+                filteredTodos.map((todo) => (
+                  <SortableTodoItem
+                    key={todo.id}
+                    id={todo.id}
+                    todo={todo}
+                    toggleComplete={() => dispatch(toggleComplete(todo.id))}
+                    deleteTodo={() => dispatch(deleteTodo(todo.id))}
+                    onEdit={() => {
+                      dispatch(startEditTodo(todo));
+                      setEditText(todo.text);
+                      setEditDescription(todo.description);
+                    }}
+                  />
+                ))
+              ) : (
+                <p className="text-gray-500">No todos available.</p>
+              )}
+            </ul>
+          </SortableContext>
+        </DndContext>
+      </main>
+    );
+  };
 
-      <ul>
-        {filteredTodos.length > 0 ? (
-          filteredTodos.map((todo) => (
-            <TodoItem
-              key={todo.id}
-              todo={todo}
-              toggleComplete={() => dispatch(toggleComplete(todo.id))}
-              deleteTodo={() => dispatch(deleteTodo(todo.id))}
-              onEdit={() => {
-                dispatch(startEditTodo(todo));
-                setEditText(todo.text);
-                setEditDescription(todo.description);
-              }}
-            />
-          ))
-        ) : (
-          <p className="text-gray-500">No todos available.</p>
-        )}
-      </ul>
-    </main>
-  );
+
+
+
+
+
+
+
+
+  
 
   return (
     <Router>

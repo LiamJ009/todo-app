@@ -2,7 +2,7 @@ import React from 'react';
 
 function TodoItem({ todo, toggleComplete, deleteTodo, onEdit }) {
   return (
-    <li className={`flex items-center justify-between p-4 mb-4 bg-gray-100 rounded-lg shadow-md ${todo.completed ? 'bg-blue-100' : ''}`}>
+    <div className={`flex items-center justify-between p-4 bg-gray-100 rounded-lg shadow-md ${todo.completed ? 'bg-blue-100' : ''}`}>
       {/* Todo Text */}
       <div className="flex-1">
         <h3 className={`text-lg font-semibold ${todo.completed ? 'line-through text-gray-500' : ''}`}>{todo.text}</h3>
@@ -48,7 +48,7 @@ function TodoItem({ todo, toggleComplete, deleteTodo, onEdit }) {
           &times;
         </button>
       </div>
-    </li>
+    </div>
   );
 }
 

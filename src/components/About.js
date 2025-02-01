@@ -15,8 +15,8 @@ const About = () => {
         <ul className="list-disc pl-5 text-gray-700 mb-4">
           <li><strong>Built with React</strong> – Learning component-based architecture, state management, hooks.</li>
           <li><strong>Full CRUD Functionality</strong> – Create, read, update, and delete todos.</li>
-          <li><strong>Redux Integration (Upcoming)</strong> – Managing global state efficiently.</li>
-          <li><strong>Draggable Todos (Upcoming)</strong> – Implementing drag-and-drop to reorder items.</li>
+          <li><strong>Redux Integration</strong> – Managing global state efficiently.</li>
+          <li><strong>Draggable Todos</strong> – Implementing drag-and-drop to reorder items.</li>
           <li><strong>Multi-User Support (Upcoming)</strong> – Expanding the app to support multiple users.</li>
         </ul>
 
